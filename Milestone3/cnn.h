@@ -2,24 +2,31 @@
 #define CNN_H
 
 #include <QMainWindow>
+#include <channel.h>
 
-#include<channel.h>
-QT_BEGIN_NAMESPACE
-namespace Ui { class CNN; }
-QT_END_NAMESPACE
-
-class CNN : public QMainWindow
+class CNN
 {
-    Q_OBJECT
+    vector<Channel> channel32;
+    vector<Channel> channel64;
+    typedef vector<vector<vector<double>>> matrix3d;
+    vector<matrix3d> conv3d_output;
+    vector<matrix3d> conv3d_input;
+    vector<matrix3d> matrix4d;
 
+    vector<double> processed_input;
 public:
-    CNN(QWidget *parent = nullptr);
+    CNN();
     ~CNN();
-    void conv3D();
+    void conv3D(vector<Channel> chan);
+    //void conv3Dx64();
     void maxpool3D(vector<Channel> &);
     unsigned int vector_find_pos_max(vector<double>&);
 
+    //paddin and input data
+    void padding();
+    vector<double> flatten_matrix(vector<vector<vector<vector<double>>>> input_matrix);
+    vector<vector<vector<vector<double>>>> rebuild_input_matrix(vector<double> input);
+
 private:
-    Ui::CNN *ui;
 };
 #endif // CNN_H

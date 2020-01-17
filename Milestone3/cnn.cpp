@@ -1,19 +1,72 @@
 #include "cnn.h"
 #include "ui_cnn.h"
-using namespace std;
-#include<channel.h>
-CNN::CNN(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::CNN)
+
+CNN::CNN()
 {
-    ui->setupUi(this);
+    for(size_t i=0;i<32;i++){
+        channel32.push_back(Channel(32,28));
+    }
+    for(size_t i=0;i<64;i++){
+        channel64.push_back(Channel(64,28));
+    }
 }
 
-CNN::~CNN()
-{
-    delete ui;
-}
+void CNN::conv3D(vector<Channel> chan){
+    double kernel_sum = 0;
+    //goes through the input matrix
+        for (size_t m = 1; m<conv3d_input[0].size()-1;m++){
+            for (size_t x = 1; x<conv3d_input[0][0].size()-1;x++){
+                for (size_t y = 1; y<conv3d_input[0][0][0].size()-1;y++)
+                {                   
 
+                    // goes through each channel
+                    for(size_t i = 0; i< chan.size(); i++){
+                        kernel_sum = 0;
+                            for(size_t j = 0; j< chan.size(); j++){
+                                // takes the sum of kernel * input_matrix operation
+                                kernel_sum +=
+                                        chan[i].getKernel(j)(0,0,0)*conv3d_input[j][m-1][x-1][y-1] +
+                                        chan[i].getKernel(j)(1,0,0)*conv3d_input[j][m]  [x-1][y-1] +
+                                        chan[i].getKernel(j)(2,0,0)*conv3d_input[j][m+1][x-1][y-1] +
+                                        chan[i].getKernel(j)(0,1,0)*conv3d_input[j][m-1][x]  [y-1] +
+                                        chan[i].getKernel(j)(0,2,0)*conv3d_input[j][m-1][x+1][y-1] +
+                                        chan[i].getKernel(j)(0,0,1)*conv3d_input[j][m-1][x-1][y] +
+                                        chan[i].getKernel(j)(0,0,2)*conv3d_input[j][m-1][x-1][y+1] +
+
+                                        chan[i].getKernel(j)(1,1,0)*conv3d_input[j][m]  [x]  [y-1] +
+                                        chan[i].getKernel(j)(2,1,0)*conv3d_input[j][m+1][x]  [y-1] +
+                                        chan[i].getKernel(j)(2,2,0)*conv3d_input[j][m+1][x+1][y-1] +
+                                        chan[i].getKernel(j)(1,2,0)*conv3d_input[j][m]  [x+1][y-1] +
+
+                                        chan[i].getKernel(j)(0,1,1)*conv3d_input[j][m-1][x]  [y] +
+                                        chan[i].getKernel(j)(0,2,1)*conv3d_input[j][m-1][x+1][y] +
+                                        chan[i].getKernel(j)(0,2,2)*conv3d_input[j][m-1][x+1][y+1] +
+                                        chan[i].getKernel(j)(0,1,2)*conv3d_input[j][m-1][x][y+1] +
+
+                                        chan[i].getKernel(j)(1,0,1)*conv3d_input[j][m]  [x-1][y] +
+                                        chan[i].getKernel(j)(2,0,1)*conv3d_input[j][m+1][x-1][y] +
+                                        chan[i].getKernel(j)(2,0,2)*conv3d_input[j][m+1][x-1][y+1] +
+                                        chan[i].getKernel(j)(1,0,2)*conv3d_input[j][m]  [x-1][y+1] +
+
+                                        chan[i].getKernel(j)(1,1,1)*conv3d_input[j][m]  [x]  [y] +
+
+                                        chan[i].getKernel(j)(2,1,1)*conv3d_input[j][m+1][x]  [y] +
+                                        chan[i].getKernel(j)(1,2,1)*conv3d_input[j][m]  [x+1][y] +
+                                        chan[i].getKernel(j)(1,1,2)*conv3d_input[j][m]  [x]  [y+1] +
+                                        chan[i].getKernel(j)(2,2,1)*conv3d_input[j][m+1][x+1][y] +
+                                        chan[i].getKernel(j)(2,1,2)*conv3d_input[j][m+1][x]  [y+1] +
+                                        chan[i].getKernel(j)(1,2,2)*conv3d_input[j][m][x+1]  [y+1] +
+
+                                        chan[i].getKernel(j)(2,2,2)*conv3d_input[j][m+1][x+1][y+1];
+                            }
+                            kernel_sum += chan[i].getBias();
+                            //saves the output of each cell
+                            conv3d_output[i][m-1][x-1][y-1] = chan[i].leakyReLu(kernel_sum);
+                        }
+                }
+            }
+        }
+}
 unsigned int CNN::vector_find_pos_max(vector<double> &values)
 {
     double max = 0.0;
@@ -138,3 +191,68 @@ void CNN::maxpool3D(vector<Channel> &v_channels)
 
     }
 }
+
+//Padding and input-data
+vector<vector<vector<vector<double>>>> CNN::rebuild_input_matrix(vector<double> input){
+    size_t p_ind=0, mom_ind=0, phi_ind=0, theta_ind=0;
+    vector<vector<vector<vector<double>>>> input_matrix;
+
+    for (size_t i=0; i<input.size();i++){
+       input_matrix[p_ind][mom_ind][phi_ind][theta_ind] = input[i];
+       theta_ind ++;
+       if (theta_ind ==20){
+           theta_ind=0;
+           phi_ind++;
+           if (phi_ind==20){
+               phi_ind =0;
+               mom_ind++;
+               if (mom_ind==20){
+                   mom_ind=0;
+                   p_ind++;
+               }
+           }
+       }
+    }
+    conv3d_input = input_matrix;
+    return input_matrix;
+}
+vector<double> CNN::flatten_matrix(vector<vector<vector<vector<double>>>> input_matrix){
+    vector<double> flattened_matrix;
+    for (size_t p_ind=0;p_ind<28;p_ind++){
+        for (size_t mom_ind=0;mom_ind<28;mom_ind++){
+            for (size_t phi_ind=0;phi_ind<28;phi_ind++){
+                for (size_t theta_ind=0;theta_ind<28;theta_ind++){
+                    flattened_matrix.push_back(input_matrix[p_ind][mom_ind][phi_ind][theta_ind]);
+                }
+            }
+        }
+    }
+    processed_input = flattened_matrix;
+    return flattened_matrix;
+}
+
+void CNN::padding(){
+    //size_t p_ind=0, mom_ind=0, phi_ind=0, theta_ind=0;
+    vector<double> zero_vector;
+    vector<vector<double>> zero_matrix;     //3d padding
+    for (size_t p_ind =0;p_ind< conv3d_input.size();p_ind++){
+        for (size_t mom_ind =0;mom_ind< conv3d_input [p_ind].size();mom_ind++){
+            for (size_t phi_ind =0;phi_ind< conv3d_input [p_ind] [mom_ind].size();phi_ind++){
+                conv3d_input [p_ind] [mom_ind] [phi_ind].insert(conv3d_input[p_ind] [mom_ind] [phi_ind].begin(),0);
+                conv3d_input [p_ind] [mom_ind] [phi_ind].push_back(0);
+                zero_vector.push_back(0);
+            }
+            conv3d_input [p_ind] [mom_ind].insert(conv3d_input[p_ind] [mom_ind].begin(),zero_vector);
+            conv3d_input [p_ind] [mom_ind].insert(conv3d_input[p_ind] [mom_ind].end(),zero_vector);
+            zero_matrix.push_back(zero_vector);
+            zero_vector.clear();
+        }
+        conv3d_input [p_ind].insert(conv3d_input[p_ind].begin(),zero_matrix);
+        conv3d_input [p_ind].insert(conv3d_input[p_ind].end(),zero_matrix);
+        zero_matrix.clear();
+    }
+}
+
+//void CNN::conv3Dx32()
+
+
