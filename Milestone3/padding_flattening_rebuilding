@@ -1,0 +1,60 @@
+vector<vector<vector<vector<double>>>> Neural_Network::rebuild_input_matrix(vector<double> input){
+    size_t p_ind=0, mom_ind=0, phi_ind=0, theta_ind=0;
+    vector<vector<vector<vector<double>>>> input_matrix;
+
+    for (size_t i=0; i<input.size();i++){
+       input_matrix[p_ind][mom_ind][phi_ind][theta_ind] = input[i];
+       theta_ind ++;
+       if (theta_ind ==20){
+           theta_ind=0;
+           phi_ind++;
+           if (phi_ind==20){
+               phi_ind =0;
+               mom_ind++;
+               if (mom_ind==20){
+                   mom_ind=0;
+                   p_ind++;
+               }
+           }
+       }
+    }
+    matrix_4d = input_matrix;
+    cout<<matrix_4d[0][1][19][15]<<" 4d matrix";
+    return input_matrix;
+}
+vector<double> Neural_Network::flatten_matrix(vector<vector<vector<vector<double>>>> input_matrix){
+    vector<double> flattened_matrix;
+    for (size_t p_ind=0;p_ind<28;p_ind++){
+        for (size_t mom_ind=0;mom_ind<28;mom_ind++){
+            for (size_t phi_ind=0;phi_ind<28;phi_ind++){
+                for (size_t theta_ind=0;theta_ind<28;theta_ind++){
+                    flattened_matrix.push_back(input_matrix[p_ind][mom_ind][phi_ind][theta_ind]);
+                }
+            }
+        }
+    }
+    processed_input = flattened_matrix;
+    return flattened_matrix;
+}
+
+void Neural_Network::padding(){
+    //size_t p_ind=0, mom_ind=0, phi_ind=0, theta_ind=0;
+    vector<double> zero_vector;
+    vector<vector<double>> zero_matrix;     //3d padding
+    for (size_t p_ind =0;p_ind< matrix_4d.size();p_ind++){
+        for (size_t mom_ind =0;mom_ind< matrix_4d [p_ind] [mom_ind].size();mom_ind++){
+            for (size_t phi_ind =0;phi_ind< matrix_4d [p_ind] [mom_ind] [phi_ind].size();phi_ind++){
+                matrix_4d [p_ind] [mom_ind] [phi_ind].insert(matrix_4d[p_ind] [mom_ind] [phi_ind].begin(),0);
+                matrix_4d [p_ind] [mom_ind] [phi_ind].push_back(0);
+                zero_vector.push_back(0);
+            }
+            matrix_4d [p_ind] [mom_ind].insert(matrix_4d[p_ind] [mom_ind].begin(),zero_vector);
+            matrix_4d [p_ind] [mom_ind].insert(matrix_4d[p_ind] [mom_ind].end(),zero_vector);
+            zero_matrix.push_back(zero_vector);
+            zero_vector.clear();
+        }
+        matrix_4d [p_ind].insert(matrix_4d[p_ind].begin(),zero_matrix);
+        matrix_4d [p_ind].insert(matrix_4d[p_ind].end(),zero_matrix);
+        zero_matrix.clear();
+    }
+}
