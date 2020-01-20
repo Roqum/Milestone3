@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>798</width>
+    <height>474</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QCustomPlot" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>561</width>
+      <height>411</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>10</y>
+      <width>220</width>
+      <height>211</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="load_data">
+       <property name="text">
+        <string>Load Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="analyze">
+       <property name="text">
+        <string>Analyze</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QSpinBox" name="training_lineEdit">
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Training Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QSpinBox" name="testing_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>36</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Testing Data</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QComboBox" name="comboBox">
+       <item>
+        <property name="text">
+         <string>0 Hidden-Layer</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 Hidden-Layer</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 Hidden-Layer</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Neural Net Mode</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QComboBox" name="comboBox_2">
+       <item>
+        <property name="text">
+         <string>Net Efficiency</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Data Analysis</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Graphic Mode</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Epochs</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Batches</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QSpinBox" name="spinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>99999999</number>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QSpinBox" name="batches">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>99999999</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QCustomPlot" name="widget_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>230</y>
+      <width>211</width>
+      <height>191</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
