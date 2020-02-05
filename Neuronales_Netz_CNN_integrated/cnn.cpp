@@ -91,7 +91,7 @@ void CNN::maxpool3D_32()
     size_t data_dim = 20; // or 20 or 10 in this milestone
     for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 32 3d matrix
 
-
+        // iteration for each element of the 3d matrix
         for(unsigned int x = 0; x < data_dim / 2; x++){
             for(unsigned int y = 0; y < data_dim / 2; y++){
                 for(unsigned int z = 0; z < data_dim / 2; z++){
@@ -161,7 +161,7 @@ void CNN::maxpool3D_64()
     size_t data_dim = 10; // or 20 or 10 in this milestone
     for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 64 3d matrix
 
-
+        // iteration for each element of the 3d matrix
         for(unsigned int x = 0; x < data_dim / 2; x++){
             for(unsigned int y = 0; y < data_dim / 2; y++){
                 for(unsigned int z = 0; z < data_dim / 2; z++){
@@ -232,6 +232,7 @@ void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
 
     for(unsigned int i = 0; i < v_channel_dim; i++){ // iteration for 64 3d matrix
 
+        // iteration for each element of the 3d matrix
         for(unsigned int x = 0; x < data_dim/2; x++){
             for(unsigned int y = 0; y < data_dim/2; y++){
                 for(unsigned int z = 0; z < data_dim/2; z++){
