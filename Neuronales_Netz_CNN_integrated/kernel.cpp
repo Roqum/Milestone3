@@ -4,6 +4,8 @@
 Kernel::Kernel(size_t channel_amount)
 {
     channels = channel_amount;
+
+    //resizes the Kernel
     kernel.resize(3);
     for(size_t i = 0; i<3;i++){
         kernel[i].resize(3);
@@ -12,8 +14,10 @@ Kernel::Kernel(size_t channel_amount)
 
         }
     }
-    random_weights();
+    random_weights(); //sets random weights
 }
+
+//sets random weights
 void Kernel::random_weights(){
     for(size_t i = 0; i<3;i++){
         for(size_t j = 0; j<3;j++){
@@ -22,5 +26,10 @@ void Kernel::random_weights(){
             }
         }
     }
+}
+
+
+void Kernel::reset_weights(){
+    random_weights();
 }
 

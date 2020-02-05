@@ -8,9 +8,39 @@ CNN::CNN()
     for(size_t i=0;i<64;i++){
         channel64.push_back(Channel(64,32));
     }
+    conv3d_output.resize(32);
+        for(unsigned int i = 0; i < 32; i++){
+            conv3d_output[i].resize(20);
+            for(unsigned int j = 0; j < 20; j++){
+                conv3d_output[i][j].resize(20);
+                for(unsigned int z = 0; z < 20; z++){
+                    conv3d_output[i][j][z].resize(20);
+                }
+            }
+        }
+        for(unsigned int i = 0; i < 32; i++){
+            for(unsigned int j = 0; j < 20; j++){
+                for(unsigned int z = 0; z < 20; z++){
+                    for(unsigned int k = 0; k < 20; k++){
+                        conv3d_output[i][j][z][k] = j*20*20 + z*20 + k;
+                    }
+                }
+            }
+        }
+        image_32.resize(32);
+        for(unsigned int i = 0; i < 32; i++){
+            image_32[i].resize(10);
+            for(unsigned int j = 0; j < 10; j++){
+                image_32[i][j].resize(10);
+                for(unsigned int z = 0; z < 10; z++){
+                    image_32[i][j][z].resize(10);
+                }
+            }
+        }
 }
 
-vector<double> CNN::feed_forward(){;
+vector<double> CNN::feed_forward(){
+
     conv3D(channel32);
     maxpool3D_32();
     conv3d_input = image_32;
@@ -25,20 +55,23 @@ void CNN::conv3D(vector<Channel> chan){
     double kernel_sum = 0;
     if (chan.size() == 64){
         vector<vector<vector<vector<double>>>> output_matrix (64, vector<vector<vector<double>>>(10, vector<vector<double>>(10, vector<double>(10))));
+        conv3d_output = output_matrix;
     }
     else {
         vector<vector<vector<vector<double>>>> output_matrix (32, vector<vector<vector<double>>>(20, vector<vector<double>>(20, vector<double>(20))));
+        conv3d_output = output_matrix;
     }
-    //goes through the input matrix
+    //goes through each position of the 3D input matrix
         for (size_t m = 1; m<conv3d_input[0].size()-1;m++){
             for (size_t x = 1; x<conv3d_input[0][0].size()-1;x++){
-                for (size_t y = 1; y<conv3d_input[0][0][0].size()-1;y++)
-                {
+                for (size_t y = 1; y<conv3d_input[0][0][0].size()-1;y++){
 
                     // goes through each channel
                     for(size_t i = 0; i< chan.size(); i++){
                         kernel_sum = 0;
-                            for(size_t j = 0; j< chan.size(); j++){
+
+                        //goes through the depth
+                        for(size_t j = 0; j< conv3d_input.size(); j++){
                                 // takes the sum of kernel * input_matrix operation
                                 kernel_sum +=
                                         chan[i].getKernel(j)(0,0,0)*conv3d_input[j][m-1][x-1][y-1] +
@@ -75,8 +108,9 @@ void CNN::conv3D(vector<Channel> chan){
 
                                         chan[i].getKernel(j)(2,2,2)*conv3d_input[j][m+1][x+1][y+1];
                             }
-                            kernel_sum += chan[i].getBias();
-                            //saves the output of each cell
+                            kernel_sum += chan[i].getBias(); // adds the bias of the channel
+
+                            //saves the kernel sum into the output matrix
                             conv3d_output[i][m-1][x-1][y-1] = chan[i].leakyReLu(kernel_sum);
                         }
                 }
@@ -89,9 +123,9 @@ void CNN::maxpool3D_32()
     values.resize(8);
     size_t v_channels_dim = 32; // or 32 or 64 in this milestone
     size_t data_dim = 20; // or 20 or 10 in this milestone
-    for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 32 3d matrix
+    for(unsigned int i = 0; i < v_channels_dim; i++){
 
-        // iteration for each element of the 3d matrix
+
         for(unsigned int x = 0; x < data_dim / 2; x++){
             for(unsigned int y = 0; y < data_dim / 2; y++){
                 for(unsigned int z = 0; z < data_dim / 2; z++){
@@ -144,7 +178,7 @@ void CNN::maxpool3D_32()
                         activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,0);
 
                     // add the max to the new matrix
-                    image_set_32(image_32[i],x,y,z,max);
+                    activation_map_set(image_32[i],x,y,z,max);
                 }
             }
         }
@@ -159,9 +193,9 @@ void CNN::maxpool3D_64()
     values.resize(8);
     size_t v_channels_dim = 64; // or 32 or 64 in this milestone
     size_t data_dim = 10; // or 20 or 10 in this milestone
-    for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 64 3d matrix
+    for(unsigned int i = 0; i < v_channels_dim; i++){
 
-        // iteration for each element of the 3d matrix
+
         for(unsigned int x = 0; x < data_dim / 2; x++){
             for(unsigned int y = 0; y < data_dim / 2; y++){
                 for(unsigned int z = 0; z < data_dim / 2; z++){
@@ -214,7 +248,7 @@ void CNN::maxpool3D_64()
                         activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,0);
 
                     // add the max to the new matrix
-                    image_set_64(image_64[i],x,y,z,max);
+                    activation_map_set(image_64[i],x,y,z,max);
                 }
             }
         }
@@ -230,9 +264,8 @@ void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
     unsigned int v_channel_dim = 64; // 32 or 64 in this milestone
     unsigned int data_dim = 10;
 
-    for(unsigned int i = 0; i < v_channel_dim; i++){ // iteration for 64 3d matrix
+    for(unsigned int i = 0; i < v_channel_dim; i++){
 
-        // iteration for each element of the 3d matrix
         for(unsigned int x = 0; x < data_dim/2; x++){
             for(unsigned int y = 0; y < data_dim/2; y++){
                 for(unsigned int z = 0; z < data_dim/2; z++){
@@ -274,7 +307,7 @@ void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
 
     }
 }
-unsigned int CNN::vector_find_pos_max(vector<double> &values)  // function used to find the max for the maxpool3d
+unsigned int CNN::vector_find_pos_max(vector<double> &values)
 {
     double max = 0.0;
     unsigned int pos = 0;
@@ -287,21 +320,12 @@ unsigned int CNN::vector_find_pos_max(vector<double> &values)  // function used 
     return pos;
 }
 
-double CNN::activation_map_get(vector3D& matrix, size_t x, size_t y, size_t z) // to obtain a value inside the 3d matrix
+double CNN::activation_map_get(vector3D& matrix, size_t x, size_t y, size_t z)
 {
     return matrix[x][y][z];
 }
 
-void CNN::activation_map_set(vector3D& matrix, size_t x, size_t y, size_t z, double n) // to put a value inside the 3d matrix
-{
-    matrix[x][y][z] = n;
-}
-
-void CNN::image_set_32(vector3D& matrix, size_t x, size_t y, size_t z, double n) // to obtain a value inside the 3d matrix
-{
-    matrix[x][y][z] = n;
-}
-void CNN::image_set_64(vector3D& matrix, size_t x, size_t y, size_t z, double n)  // to put a value inside the 3d matrix
+void CNN::activation_map_set(vector3D& matrix, size_t x, size_t y, size_t z, double n)
 {
     matrix[x][y][z] = n;
 }
@@ -309,7 +333,7 @@ void CNN::image_set_64(vector3D& matrix, size_t x, size_t y, size_t z, double n)
 //Padding and input-data
 vector<vector<vector<vector<double>>>> CNN::rebuild_input_matrix(vector<double> input){
     size_t p_ind=0, mom_ind=0, phi_ind=0, theta_ind=0;
-    vector<vector<vector<vector<double>>>> input_matrix;
+    vector<vector<vector<vector<double>>>> input_matrix(28, vector<vector<vector<double>>>(20, vector<vector<double>>(20, vector<double>(20))));
 
     for (size_t i=0; i<input.size();i++){
        input_matrix[p_ind][mom_ind][phi_ind][theta_ind] = input[i];
