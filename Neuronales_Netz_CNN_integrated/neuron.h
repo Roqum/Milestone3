@@ -84,6 +84,9 @@ public:
     /// sets the gradient to the given value ///
     void setGradient(double new_gradient);
 
+    ///gets the gradient of the neuron///
+    double get_Gradient();
+
 
 };
 

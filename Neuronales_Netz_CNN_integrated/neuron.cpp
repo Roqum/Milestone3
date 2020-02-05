@@ -147,3 +147,7 @@ long double Neuron::getOutput(){
 void Neuron::setGradient(double new_gradient){
     gradient = new_gradient;
 }
+double Neuron::get_Gradient()
+{
+    return this->gradient;
+}

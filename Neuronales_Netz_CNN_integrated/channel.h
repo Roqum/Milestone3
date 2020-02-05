@@ -15,10 +15,6 @@ class Channel
     vector<Kernel> channel;
     size_t channels_count;
     double bias;
-    /* fede's changes */
-    vector3D activation_map;
-    vector3D image;
-    /* end fede's changes */
 public:
     Channel(size_t channels,  size_t depth);
     double leakyReLu(double);
@@ -32,12 +28,6 @@ public:
     double getBias(){
         return bias;
     }
-    /* fede changes */
-    double activation_map_get(size_t, size_t, size_t);
-    void activation_map_set(size_t, size_t, size_t, double);
-    size_t activation_map_size(){ return activation_map.size();}
-    void image_set(size_t, size_t, size_t, double);
-    /* end fede changes */
 };
 
 #endif // CHANNEL_H

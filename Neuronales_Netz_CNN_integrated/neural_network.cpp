@@ -76,6 +76,7 @@ void Neural_Network::change_input(){
 }
 
 void Neural_Network::calc_data(){
+
     // gives each input neuron one number of the file
     for(size_t i=0;i<network[0].size();i++){
         network[0][i].setOutput((processed_input[i]));

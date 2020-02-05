@@ -8,14 +8,14 @@ Channel::Channel(size_t channels, size_t depth)
     for(size_t i = 0; i<depth; i++){
         channel.push_back(Kernel(channels));
     }
-    /* fede changes */
-    /*
+    /* fede changes
+
      *
      *
      *
      *
      *
-    */
+
     unsigned int dim_data;
     // creating space in the activation map
     if(channels == 32)
@@ -46,27 +46,19 @@ Channel::Channel(size_t channels, size_t depth)
             image[i][j].resize(image.size());
         }
     }
-    /*
+
      *
      *
      *
-     */
-    /* end fede changes */
+
+     end fede changes */
+}
+double Channel::leakyReLu(double inp){
+    if (inp < 0){
+        return (0.01*inp);
+    }
+    else {
+        return inp;
+    }
 }
 
-/* fede changes */
-double Channel::activation_map_get(size_t x, size_t y, size_t z)
-{
-    return activation_map[x][y][z];
-}
-
-void Channel::activation_map_set(size_t x, size_t y, size_t z, double n)
-{
-    activation_map[x][y][z] = n;
-}
-
-void Channel::image_set(size_t x, size_t y, size_t z, double n)
-{
-    image[x][y][z] = n;
-}
-/* end fede changes */

@@ -1,5 +1,4 @@
 #include "cnn.h"
-//#include "ui_cnn.h"       //test
 
 CNN::CNN()
 {
@@ -7,12 +6,29 @@ CNN::CNN()
         channel32.push_back(Channel(32,28));
     }
     for(size_t i=0;i<64;i++){
-        channel64.push_back(Channel(64,28));
+        channel64.push_back(Channel(64,32));
     }
+}
+
+vector<double> CNN::feed_forward(){;
+    conv3D(channel32);
+    maxpool3D_32();
+    conv3d_input = image_32;
+    padding();
+    conv3D(channel64);
+    maxpool3D_64();
+    return flatten_matrix(image_64);
+
 }
 
 void CNN::conv3D(vector<Channel> chan){
     double kernel_sum = 0;
+    if (chan.size() == 64){
+        vector<vector<vector<vector<double>>>> output_matrix (64, vector<vector<vector<double>>>(10, vector<vector<double>>(10, vector<double>(10))));
+    }
+    else {
+        vector<vector<vector<vector<double>>>> output_matrix (32, vector<vector<vector<double>>>(20, vector<vector<double>>(20, vector<double>(20))));
+    }
     //goes through the input matrix
         for (size_t m = 1; m<conv3d_input[0].size()-1;m++){
             for (size_t x = 1; x<conv3d_input[0][0].size()-1;x++){
@@ -61,11 +77,201 @@ void CNN::conv3D(vector<Channel> chan){
                             }
                             kernel_sum += chan[i].getBias();
                             //saves the output of each cell
-                            //conv3d_output[i][m-1][x-1][y-1] = chan[i].leakyReLu(kernel_sum);      //test LRelu not implemented
+                            conv3d_output[i][m-1][x-1][y-1] = chan[i].leakyReLu(kernel_sum);
                         }
                 }
             }
         }
+}
+void CNN::maxpool3D_32()
+{
+    vector<double> values;
+    values.resize(8);
+    size_t v_channels_dim = 32; // or 32 or 64 in this milestone
+    size_t data_dim = 20; // or 20 or 10 in this milestone
+    for(unsigned int i = 0; i < v_channels_dim; i++){
+
+
+        for(unsigned int x = 0; x < data_dim / 2; x++){
+            for(unsigned int y = 0; y < data_dim / 2; y++){
+                for(unsigned int z = 0; z < data_dim / 2; z++){
+                    // select the 8 values from which find the max
+
+                    values[0] = activation_map_get(conv3d_output[i],x*2,y*2,z*2); // 0 0 0
+                    values[1] = activation_map_get(conv3d_output[i],x*2,y*2,(z * 2) + 1); // 0 0 +1
+                    values[2] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2)); // 0 +1 0
+                    values[3] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1); // 0 +1 +1
+                    values[4] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,z*2); // 1 0 0
+                    values[5] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1); // +1 0 +1
+                    values[6] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2); // +1 +1 0
+                    values[7] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1); // +1 +1 +1
+
+                    unsigned int pos = vector_find_pos_max(values);
+                    double max = values[pos];
+                    // put 1 where the max is, 0 in the other pos
+
+                    if(pos == 0)
+                        activation_map_set(conv3d_output[i],x*2,y*2,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,y*2,z*2,0);
+                    if(pos == 1)
+                        activation_map_set(conv3d_output[i],x*2,y*2,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,y*2,(z * 2) + 1,0);
+                    if(pos == 2)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,z*2,0);
+                    if(pos == 3)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1,0);
+                    if(pos == 4)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,z*2,0);
+                    if(pos == 5)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1,0);
+                    if(pos == 6)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2,0);
+                    if(pos == 7)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,0);
+
+                    // add the max to the new matrix
+                    image_set_32(image_32[i],x,y,z,max);
+                }
+            }
+        }
+
+
+    }
+}
+
+void CNN::maxpool3D_64()
+{
+    vector<double> values;
+    values.resize(8);
+    size_t v_channels_dim = 64; // or 32 or 64 in this milestone
+    size_t data_dim = 10; // or 20 or 10 in this milestone
+    for(unsigned int i = 0; i < v_channels_dim; i++){
+
+
+        for(unsigned int x = 0; x < data_dim / 2; x++){
+            for(unsigned int y = 0; y < data_dim / 2; y++){
+                for(unsigned int z = 0; z < data_dim / 2; z++){
+                    // select the 8 values from which find the max
+
+                    values[0] = activation_map_get(conv3d_output[i],x*2,y*2,z*2); // 0 0 0
+                    values[1] = activation_map_get(conv3d_output[i],x*2,y*2,(z * 2) + 1); // 0 0 +1
+                    values[2] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2)); // 0 +1 0
+                    values[3] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1); // 0 +1 +1
+                    values[4] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,z*2); // 1 0 0
+                    values[5] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1); // +1 0 +1
+                    values[6] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2); // +1 +1 0
+                    values[7] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1); // +1 +1 +1
+
+                    unsigned int pos = vector_find_pos_max(values);
+                    double max = values[pos];
+                    // put 1 where the max is, 0 in the other pos
+
+                    if(pos == 0)
+                        activation_map_set(conv3d_output[i],x*2,y*2,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,y*2,z*2,0);
+                    if(pos == 1)
+                        activation_map_set(conv3d_output[i],x*2,y*2,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,y*2,(z * 2) + 1,0);
+                    if(pos == 2)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,z*2,0);
+                    if(pos == 3)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1,0);
+                    if(pos == 4)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,z*2,0);
+                    if(pos == 5)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1,0);
+                    if(pos == 6)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2,0);
+                    if(pos == 7)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,1);
+                    else
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,0);
+
+                    // add the max to the new matrix
+                    image_set_64(image_64[i],x,y,z,max);
+                }
+            }
+        }
+
+
+    }
+}
+
+void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
+{
+    vector<double> values;
+    values.resize(8);
+    unsigned int v_channel_dim = 64; // 32 or 64 in this milestone
+    unsigned int data_dim = 10;
+
+    for(unsigned int i = 0; i < v_channel_dim; i++){
+
+        for(unsigned int x = 0; x < data_dim/2; x++){
+            for(unsigned int y = 0; y < data_dim/2; y++){
+                for(unsigned int z = 0; z < data_dim/2; z++){
+                    // now activation map ha only 1 and 0 values
+                    values[0] = activation_map_get(conv3d_output[i],x*2,y*2,z*2); // 0 0 0
+                    values[1] = activation_map_get(conv3d_output[i],x*2,y*2,(z * 2) + 1); // 0 0 +1
+                    values[2] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2)); // 0 +1 0
+                    values[3] = activation_map_get(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1); // 0 +1 +1
+                    values[4] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,z*2); // 1 0 0
+                    values[5] = activation_map_get(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1); // +1 0 +1
+                    values[6] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2); // +1 +1 0
+                    values[7] = activation_map_get(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1); // +1 +1 +1
+
+                    unsigned int linear_pos = x*data_dim*data_dim + y*data_dim + z;
+                    std::cout << linear_pos << "\n" << std::endl;
+                    double current_gradient = layer[linear_pos].get_Gradient();
+                    // put gradient where there is 1
+                    if(values[0] == 1.)
+                        activation_map_set(conv3d_output[i],x*2,y*2,z*2,current_gradient);
+                    else if(values[1] == 1.)
+                        activation_map_set(conv3d_output[i],x*2,y*2,(z * 2) + 1,current_gradient);
+                    else if(values[2] == 1.)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,z*2,current_gradient);
+                    else if(values[3] == 1.)
+                        activation_map_set(conv3d_output[i],x*2,(y * 2) + 1,(z * 2) + 1,current_gradient);
+                    else if(values[4] == 1.)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,z*2,current_gradient);
+                    else if(values[5] == 1.)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,y*2,(z * 2) + 1,current_gradient);
+                    else if(values[6] == 1.)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,z*2,current_gradient);
+                    else if(values[7] == 1.)
+                        activation_map_set(conv3d_output[i],(x * 2) + 1,(y * 2) + 1,(z * 2) + 1,current_gradient);
+
+                }
+            }
+        }
+
+
+    }
 }
 unsigned int CNN::vector_find_pos_max(vector<double> &values)
 {
@@ -79,117 +285,24 @@ unsigned int CNN::vector_find_pos_max(vector<double> &values)
     }
     return pos;
 }
-void CNN::maxpool3D(vector<Channel> &v_channels)
+
+double CNN::activation_map_get(vector3D& matrix, size_t x, size_t y, size_t z)
 {
-    vector<double> values;
-    values.resize(8);
-    size_t v_channels_dim = v_channels.size(); // or 32 or 64 in this milestone
-    size_t data_dim = v_channels[0].activation_map_size(); // or 20 or 10 in this milestone
-    for(unsigned int i = 0; i < v_channels_dim; i++){
+    return matrix[x][y][z];
+}
 
+void CNN::activation_map_set(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+{
+    matrix[x][y][z] = n;
+}
 
-        for(unsigned int x = 0; x < data_dim / 2; x++){
-            for(unsigned int y = 0; y < data_dim / 2; y++){
-                for(unsigned int z = 0; z < data_dim / 2; z++){
-                    // select the 8 values from which find the max
-
-                    values[0] = v_channels[i].activation_map_get(x*2,y*2,z*2); // 0 0 0
-                    values[1] = v_channels[i].activation_map_get(x*2,y*2,(z * 2) + 1); // 0 0 +1
-                    values[2] = v_channels[i].activation_map_get(x*2,(y * 2) + 1,(z * 2)); // 0 +1 0
-                    values[3] = v_channels[i].activation_map_get(x*2,(y * 2) + 1,(z * 2) + 1); // 0 +1 +1
-                    values[4] = v_channels[i].activation_map_get((x * 2) + 1,y*2,z*2); // 1 0 0
-                    values[5] = v_channels[i].activation_map_get((x * 2) + 1,y*2,(z * 2) + 1); // +1 0 +1
-                    values[6] = v_channels[i].activation_map_get((x * 2) + 1,(y * 2) + 1,z*2); // +1 +1 0
-                    values[7] = v_channels[i].activation_map_get((x * 2) + 1,(y * 2) + 1,(z * 2) + 1); // +1 +1 +1
-                    /*
-                    values[0] = v_channels[i].activation_map_get(x,y,z); // 0 0 0
-                    values[1] = v_channels[i].activation_map_get(x,y,(z + 1)); // 0 0 +1
-                    values[2] = v_channels[i].activation_map_get(x,(y + 1),z); // 0 +1 0
-                    values[3] = v_channels[i].activation_map_get(x,(y + 1),(z + 1)); // 0 +1 +1
-                    values[4] = v_channels[i].activation_map_get((x + 1),y,z); // 1 0 0
-                    values[5] = v_channels[i].activation_map_get((x + 1),y,(z + 1)); // +1 0 +1
-                    values[6] = v_channels[i].activation_map_get((x + 1),(y + 1),z); // +1 +1 0
-                    values[7] = v_channels[i].activation_map_get((x + 1),(y + 1),(z + 1)); // +1 +1 +1
-                    */
-                    unsigned int pos = vector_find_pos_max(values);
-                    double max = values[pos];
-                    // put 1 where the max is, 0 in the other pos
-
-                    if(pos == 0)
-                        v_channels[i].activation_map_set(x*2,y*2,z*2,1);
-                    else
-                        v_channels[i].activation_map_set(x*2,y*2,z*2,0);
-                    if(pos == 1)
-                        v_channels[i].activation_map_set(x*2,y*2,(z * 2) + 1,1);
-                    else
-                        v_channels[i].activation_map_set(x*2,y*2,(z * 2) + 1,0);
-                    if(pos == 2)
-                        v_channels[i].activation_map_set(x*2,(y * 2) + 1,z*2,1);
-                    else
-                        v_channels[i].activation_map_set(x*2,(y * 2) + 1,z*2,0);
-                    if(pos == 3)
-                        v_channels[i].activation_map_set(x*2,(y * 2) + 1,(z * 2) + 1,1);
-                    else
-                        v_channels[i].activation_map_set(x*2,(y * 2) + 1,(z * 2) + 1,0);
-                    if(pos == 4)
-                        v_channels[i].activation_map_set((x * 2) + 1,y*2,z*2,1);
-                    else
-                        v_channels[i].activation_map_set((x * 2) + 1,y*2,z*2,0);
-                    if(pos == 5)
-                        v_channels[i].activation_map_set((x * 2) + 1,y*2,(z * 2) + 1,1);
-                    else
-                        v_channels[i].activation_map_set((x * 2) + 1,y*2,(z * 2) + 1,0);
-                    if(pos == 6)
-                        v_channels[i].activation_map_set((x * 2) + 1,(y * 2) + 1,z*2,1);
-                    else
-                        v_channels[i].activation_map_set((x * 2) + 1,(y * 2) + 1,z*2,0);
-                    if(pos == 7)
-                        v_channels[i].activation_map_set((x * 2) + 1,(y * 2) + 1,(z * 2) + 1,1);
-                    else
-                        v_channels[i].activation_map_set((x * 2) + 1,(y * 2) + 1,(z * 2) + 1,0);
-
-                    /*
-                    if(pos == 0)
-                        v_channels[i].activation_map_set(x,y,z,1);
-                    else
-                        v_channels[i].activation_map_set(x,y,z,0);
-                    if(pos == 1)
-                        v_channels[i].activation_map_set(x,y,(z + 1),1);
-                    else
-                        v_channels[i].activation_map_set(x,y,(z + 1),0);
-                    if(pos == 2)
-                        v_channels[i].activation_map_set(x,(y + 1),z,1);
-                    else
-                        v_channels[i].activation_map_set(x,(y + 1),z,0);
-                    if(pos == 3)
-                        v_channels[i].activation_map_set(x,(y + 1),(z + 1),1);
-                    else
-                        v_channels[i].activation_map_set(x,(y + 1),(z + 1),0);
-                    if(pos == 4)
-                        v_channels[i].activation_map_set((x + 1),y,z,1);
-                    else
-                        v_channels[i].activation_map_set((x + 1),y,z,0);
-                    if(pos == 5)
-                        v_channels[i].activation_map_set((x + 1),y,(z + 1) ,1);
-                    else
-                        v_channels[i].activation_map_set((x + 1),y,(z + 1) ,0);
-                    if(pos == 6)
-                        v_channels[i].activation_map_set((x + 1),(y + 1),z,1);
-                    else
-                        v_channels[i].activation_map_set((x + 1),(y + 1),z,0);
-                    if(pos == 7)
-                        v_channels[i].activation_map_set((x + 1),(y + 1),(z + 1),1);
-                    else
-                        v_channels[i].activation_map_set((x + 1),(y + 1),(z + 1),0);
-                    */
-                    // add the max to the new matrix
-                    v_channels[i].image_set(x,y,z,max);
-                }
-            }
-        }
-
-
-    }
+void CNN::image_set_32(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+{
+    matrix[x][y][z] = n;
+}
+void CNN::image_set_64(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+{
+    matrix[x][y][z] = n;
 }
 
 //Padding and input-data
@@ -286,6 +399,22 @@ void CNN::change_input(){
     }
     raw_input.clear();
 }
-//void CNN::conv3Dx32()
+
+void CNN::clear_all(){
+}
+
+vector<Channel> CNN::getConv3DLayer32(){
+    return channel32;
+}
+vector<Channel> CNN::getConv3DLayer64(){
+    return channel64;
+}
+vector<vector3D> CNN::get_cnn_matrix(){
+    return conv3d_input;
+}
+
+vector<double> CNN::get_processed_input(){
+    return processed_input;
+}
 
 

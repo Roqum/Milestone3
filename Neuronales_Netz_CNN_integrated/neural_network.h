@@ -1,6 +1,7 @@
 #ifndef NEURAL_NETWORK_H
 #define NEURAL_NETWORK_H
 #include "neuron.h"
+#include "cnn.h"
 #include <QCoreApplication>
 using namespace std;
 
