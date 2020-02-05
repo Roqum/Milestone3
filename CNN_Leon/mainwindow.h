@@ -44,6 +44,7 @@ private:
     int epoch;  // amount of datapoints on the graph
     int nFiles; // amount of data files for each epoch
     int nFiles_test;    // amount of files for test runs
+    bool CNN_act = false;
     CNN conv_net;     //test
     QDir nqgp;  // directory of nqgp files
     QDir qgp;   // directory of qgp files

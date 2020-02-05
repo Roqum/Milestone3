@@ -66,8 +66,14 @@ void MainWindow::analyze_clicked(){
 
     // creates a network with 0,1 or 2 hidden Layers
     // choice depens on selceted network mode
-    conv_net = CNN();      //test
-    if( ui->comboBox->currentIndex() == 2){
+
+    if( ui->comboBox->currentIndex() == 3){
+        conv_net = CNN();      //test
+        topology topo{8000,2};
+        network = new Neural_Network(topo, ui->batches->value());
+        CNN_act = true;
+    }
+    else if( ui->comboBox->currentIndex() == 2){
         topology topo{224000,64,32,2};
         network = new Neural_Network(topo, ui->batches->value());
     }
@@ -122,15 +128,20 @@ void MainWindow::run_training(){
                 nqgp_iter++;
                 nqgp_iter = nqgp_iter % 100; // the first 100 files are just used for training
 
-                conv_net.import_data(fileNames.toStdString());      //test
-                conv_net.change_input();
-                conv_net.rebuild_input_matrix(conv_net.get_processed_input());
-                conv_net.padding();
-                cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+                if (CNN_act){
+                    conv_net.import_data(fileNames.toStdString());      //test
+                    conv_net.change_input();
+                    conv_net.rebuild_input_matrix(conv_net.get_processed_input());
+                    conv_net.padding();
+                    network->processed_input=conv_net.feed_forward();
+                    cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+                }
 
                 // runs the data through the network
-                network->import_data(fileNames.toStdString());
-                network->change_input();
+                else{
+                    network->import_data(fileNames.toStdString());
+                    network->change_input();
+                }
                 network->calc_data();
 
                 // starts the backpropagation
@@ -154,16 +165,20 @@ void MainWindow::run_training(){
                 qgp_iter++;
                 qgp_iter = qgp_iter % 100; // the first 100 files are just used for training
 
-                conv_net.import_data(fileNames.toStdString());      //test
-                conv_net.change_input();
-                conv_net.rebuild_input_matrix(conv_net.get_processed_input());
-                conv_net.padding();
-                cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
-
+                if (CNN_act){
+                    conv_net.import_data(fileNames.toStdString());      //test
+                    conv_net.change_input();
+                    conv_net.rebuild_input_matrix(conv_net.get_processed_input());
+                    conv_net.padding();
+                    network->processed_input=conv_net.feed_forward();
+                    cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+                }
 
                 // runs the data through the network
-                network->import_data(fileNames.toStdString());
-                network->change_input();
+                else{
+                    network->import_data(fileNames.toStdString());
+                    network->change_input();
+                }
                 network->calc_data();
 
                 // starts backpropagation
@@ -243,15 +258,20 @@ void MainWindow::run_tests(){
 
             nqpg_iter++;
 
-            conv_net.import_data(fileNames.toStdString());      //test
-            conv_net.change_input();
-            conv_net.rebuild_input_matrix(conv_net.get_processed_input());
-            conv_net.padding();
-            cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+            if (CNN_act){
+                conv_net.import_data(fileNames.toStdString());      //test
+                conv_net.change_input();
+                conv_net.rebuild_input_matrix(conv_net.get_processed_input());
+                conv_net.padding();
+                network->processed_input=conv_net.feed_forward();
+                cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+            }
 
-            // runs data through network
-            network->import_data(fileNames.toStdString());
-            network->change_input();
+            // runs the data through the network
+            else{
+                network->import_data(fileNames.toStdString());
+                network->change_input();
+            }
             network->calc_data();
 
             result.push_back(network->network[network->network.size()-1][0].getOutput());
@@ -267,15 +287,20 @@ void MainWindow::run_tests(){
 
             qpg_iter++;
 
-            conv_net.import_data(fileNames.toStdString());      //test
-            conv_net.change_input();
-            conv_net.rebuild_input_matrix(conv_net.get_processed_input());
-            conv_net.padding();
-            cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+            if (CNN_act){
+                conv_net.import_data(fileNames.toStdString());      //test
+                conv_net.change_input();
+                conv_net.rebuild_input_matrix(conv_net.get_processed_input());
+                conv_net.padding();
+                network->processed_input=conv_net.feed_forward();
+                cout<< "cnn p_ind:"<<conv_net.get_cnn_matrix().size()<<", mom_ind:"<<conv_net.get_cnn_matrix()[27].size()<<", theta_ind:"<<conv_net.get_cnn_matrix()[25][10].size()<<", phi_ind:"<<conv_net.get_cnn_matrix()[12][3][5].size()<<endl;
+            }
 
-            // runs file through network
-            network->import_data(fileNames.toStdString());
-            network->change_input();
+            // runs the data through the network
+            else{
+                network->import_data(fileNames.toStdString());
+                network->change_input();
+            }
             network->calc_data();
 
             result.push_back(network->network[network->network.size()-1][0].getOutput());

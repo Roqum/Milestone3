@@ -99,6 +99,11 @@
          <string>2 Hidden-Layer</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>CNN</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="4" column="1">
