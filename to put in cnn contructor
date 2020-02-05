@@ -1,0 +1,20 @@
+image_32.resize(32);
+    for(unsigned int i = 0; i < 32; i++){
+        image_32[i].resize(10);
+        for(unsigned int j = 0; j < 10; j++){
+            image_32[i][j].resize(10);
+            for(unsigned int z = 0; z < 10; z++){
+                image_32[i][j][z].resize(10);
+            }
+        }
+    }
+    image_64.resize(64);
+    for(unsigned int i = 0; i < 64; i++){
+        image_64[i].resize(5);
+        for(unsigned int j = 0; j < 5; j++){
+            image_64[i][j].resize(5);
+            for(unsigned int z = 0; z < 5; z++){
+                image_64[i][j][z].resize(5);
+            }
+        }
+    }
