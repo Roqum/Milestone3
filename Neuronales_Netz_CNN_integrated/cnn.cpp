@@ -89,7 +89,7 @@ void CNN::maxpool3D_32()
     values.resize(8);
     size_t v_channels_dim = 32; // or 32 or 64 in this milestone
     size_t data_dim = 20; // or 20 or 10 in this milestone
-    for(unsigned int i = 0; i < v_channels_dim; i++){
+    for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 32 3d matrix
 
 
         for(unsigned int x = 0; x < data_dim / 2; x++){
@@ -159,7 +159,7 @@ void CNN::maxpool3D_64()
     values.resize(8);
     size_t v_channels_dim = 64; // or 32 or 64 in this milestone
     size_t data_dim = 10; // or 20 or 10 in this milestone
-    for(unsigned int i = 0; i < v_channels_dim; i++){
+    for(unsigned int i = 0; i < v_channels_dim; i++){ // iteration for 64 3d matrix
 
 
         for(unsigned int x = 0; x < data_dim / 2; x++){
@@ -230,7 +230,7 @@ void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
     unsigned int v_channel_dim = 64; // 32 or 64 in this milestone
     unsigned int data_dim = 10;
 
-    for(unsigned int i = 0; i < v_channel_dim; i++){
+    for(unsigned int i = 0; i < v_channel_dim; i++){ // iteration for 64 3d matrix
 
         for(unsigned int x = 0; x < data_dim/2; x++){
             for(unsigned int y = 0; y < data_dim/2; y++){
@@ -273,7 +273,7 @@ void CNN::backProp_maxpool3D_64(vector<Neuron> &layer)
 
     }
 }
-unsigned int CNN::vector_find_pos_max(vector<double> &values)
+unsigned int CNN::vector_find_pos_max(vector<double> &values)  // function used to find the max for the maxpool3d
 {
     double max = 0.0;
     unsigned int pos = 0;
@@ -286,21 +286,21 @@ unsigned int CNN::vector_find_pos_max(vector<double> &values)
     return pos;
 }
 
-double CNN::activation_map_get(vector3D& matrix, size_t x, size_t y, size_t z)
+double CNN::activation_map_get(vector3D& matrix, size_t x, size_t y, size_t z) // to obtain a value inside the 3d matrix
 {
     return matrix[x][y][z];
 }
 
-void CNN::activation_map_set(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+void CNN::activation_map_set(vector3D& matrix, size_t x, size_t y, size_t z, double n) // to put a value inside the 3d matrix
 {
     matrix[x][y][z] = n;
 }
 
-void CNN::image_set_32(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+void CNN::image_set_32(vector3D& matrix, size_t x, size_t y, size_t z, double n) // to obtain a value inside the 3d matrix
 {
     matrix[x][y][z] = n;
 }
-void CNN::image_set_64(vector3D& matrix, size_t x, size_t y, size_t z, double n)
+void CNN::image_set_64(vector3D& matrix, size_t x, size_t y, size_t z, double n)  // to put a value inside the 3d matrix
 {
     matrix[x][y][z] = n;
 }
